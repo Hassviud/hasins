@@ -1,0 +1,2492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Veto Cash — Admin Control Panel</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.1.0/index.min.css" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --black: #0a0a0a;
+    --white: #ffffff;
+    --gray-50: #fafafa;
+    --gray-100: #f5f5f5;
+    --gray-200: #e5e5e5;
+    --gray-300: #d4d4d4;
+    --gray-400: #a3a3a3;
+    --gray-500: #737373;
+    --gray-600: #525252;
+    --gray-700: #404040;
+    --gray-800: #262626;
+    --sidebar-w: 260px;
+    --topbar-h: 72px;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--white);
+    color: var(--black);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ============ LOGIN PAGE ============ */
+  .login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .login-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(0,0,0,0.03) 0%, transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(0,0,0,0.03) 0%, transparent 40%);
+    pointer-events: none;
+  }
+  .login-card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    position: relative;
+    z-index: 1;
+  }
+  .login-header {
+    padding: 48px 40px 32px;
+    text-align: center;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .login-logo {
+    width: 64px;
+    height: 64px;
+    background: var(--black);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 32px;
+    letter-spacing: -1.5px;
+    margin: 0 auto 20px;
+  }
+  .login-title {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .login-subtitle {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.5;
+  }
+  .login-body {
+    padding: 32px 40px;
+  }
+  .login-warning {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    padding: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .login-warning-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: var(--black);
+    margin-top: 1px;
+  }
+  .login-warning-text {
+    font-size: 12px;
+    color: var(--gray-600);
+    line-height: 1.5;
+  }
+  .login-warning-text strong {
+    color: var(--black);
+    font-weight: 600;
+  }
+  .btn-google-login {
+    width: 100%;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    padding: 14px 20px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s;
+  }
+  .btn-google-login:hover {
+    background: var(--gray-800);
+  }
+  .login-footer {
+    padding: 20px 40px;
+    border-top: 1px solid var(--gray-200);
+    text-align: center;
+    font-size: 11px;
+    color: var(--gray-500);
+    letter-spacing: 0.5px;
+  }
+
+  /* ============ ADMIN DASHBOARD ============ */
+  .admin-page { display: none; min-height: 100vh; }
+  .admin-page.active { display: flex; }
+
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: var(--sidebar-w);
+    background: var(--black);
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .sidebar-header {
+    padding: 24px 24px 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sidebar .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--white);
+  }
+  .sidebar .logo-mark {
+    width: 34px; height: 34px;
+    background: var(--white);
+    color: var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: -0.5px;
+  }
+  .sidebar .logo-text {
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -0.3px;
+  }
+  .sidebar .logo-text small {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .nav-section { padding: 20px 16px; flex: 1; overflow-y: auto; }
+  .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    padding: 0 12px 12px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 12px;
+    margin-bottom: 2px;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+    position: relative;
+    cursor: pointer;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+  }
+  .nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+  .nav-item.active { color: var(--white); background: rgba(255,255,255,0.08); }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -16px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--white);
+  }
+  .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--white);
+    color: var(--black);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    letter-spacing: 0.3px;
+  }
+  .nav-badge.alert {
+    background: var(--white);
+    color: var(--black);
+    animation: badgePulse 2s infinite;
+  }
+  @keyframes badgePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  .sidebar-footer {
+    padding: 20px 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .admin-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .admin-card:hover { background: rgba(255,255,255,0.04); }
+  .admin-avatar {
+    width: 36px; height: 36px;
+    background: var(--white);
+    color: var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .admin-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .admin-info { flex: 1; min-width: 0; }
+  .admin-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--white);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .admin-role {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .admin-role::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(255,255,255,0.6);
+  }
+
+  .main {
+    margin-left: var(--sidebar-w);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    background: var(--white);
+  }
+
+  .topbar {
+    height: var(--topbar-h);
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    color: var(--black);
+  }
+  .page-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  .page-title small {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-500);
+    margin-top: 2px;
+  }
+
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .env-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--black);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .env-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--white);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .icon-btn {
+    position: relative;
+    width: 40px; height: 40px;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--black);
+  }
+  .icon-btn:hover { background: var(--black); color: var(--white); border-color: var(--black); }
+
+  .content { padding: 32px; flex: 1; }
+
+  /* ============ VIEWS ============ */
+  .view { display: none; }
+  .view.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, transparent 50%, var(--gray-50) 50%);
+  }
+  .stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    position: relative;
+  }
+  .stat-change {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--black);
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+  }
+
+  /* Section card */
+  .section-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    margin-bottom: 24px;
+  }
+  .section-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+  .section-title small {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gray-500);
+    margin-top: 2px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--black); color: var(--white); }
+  .btn-primary:hover { background: var(--gray-800); }
+  .btn-secondary {
+    background: var(--white);
+    color: var(--black);
+    border: 1px solid var(--gray-200);
+  }
+  .btn-secondary:hover { border-color: var(--black); }
+  .btn-danger {
+    background: var(--white);
+    color: var(--black);
+    border: 1px solid var(--gray-200);
+  }
+  .btn-danger:hover { background: var(--black); color: var(--white); border-color: var(--black); }
+  .btn-sm { padding: 6px 12px; font-size: 11px; }
+
+  /* Table */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .data-table th {
+    text-align: left;
+    padding: 14px 24px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .data-table td {
+    padding: 16px 24px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--gray-100);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tbody tr { transition: background 0.15s; }
+  .data-table tbody tr:hover { background: var(--gray-50); }
+
+  .cell-main { font-weight: 600; letter-spacing: -0.2px; }
+  .cell-sub { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+  .cell-mono {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--gray-600);
+    background: var(--gray-50);
+    padding: 3px 6px;
+    border-radius: 2px;
+    display: inline-block;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border: 1px solid var(--gray-200);
+    background: var(--white);
+  }
+  .status-pill::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--gray-400);
+  }
+  .status-pill.pending::before { background: var(--gray-400); animation: pulse 1.5s infinite; }
+  .status-pill.approved::before { background: var(--black); }
+  .status-pill.rejected::before { background: var(--gray-400); }
+  .status-pill.verified::before { background: var(--black); }
+
+  .action-group {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  /* Form */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 24px;
+  }
+  .form-grid.single { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    margin-bottom: 8px;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--black);
+    transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--black);
+  }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-hint { font-size: 11px; color: var(--gray-500); margin-top: 6px; }
+
+  .file-upload {
+    border: 2px dashed var(--gray-200);
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--white);
+  }
+  .file-upload:hover { border-color: var(--black); background: var(--gray-50); }
+  .file-upload.has-file { border-style: solid; border-color: var(--black); }
+  .file-upload-icon {
+    width: 32px; height: 32px;
+    margin: 0 auto 12px;
+    color: var(--gray-400);
+  }
+  .file-upload-text {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .file-upload-sub {
+    font-size: 11px;
+    color: var(--gray-500);
+  }
+  .file-preview {
+    max-width: 100%;
+    max-height: 200px;
+    margin-top: 12px;
+    display: none;
+  }
+  .file-preview.show { display: block; }
+
+  /* Asset card preview */
+  .asset-preview-card {
+    background: var(--black);
+    color: var(--white);
+    padding: 24px;
+    margin: 24px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  .asset-preview-img {
+    width: 100px; height: 100px;
+    background: var(--white);
+    color: var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 32px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .asset-preview-img img { width: 100%; height: 100%; object-fit: cover; }
+  .asset-preview-info { flex: 1; }
+  .asset-preview-name {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 6px;
+  }
+  .asset-preview-meta {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .asset-preview-price {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Asset list card */
+  .asset-list-item {
+    display: grid;
+    grid-template-columns: 80px 1fr auto auto auto;
+    gap: 20px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--gray-100);
+    align-items: center;
+    transition: background 0.15s;
+  }
+  .asset-list-item:hover { background: var(--gray-50); }
+  .asset-list-item:last-child { border-bottom: none; }
+  .asset-thumb {
+    width: 64px; height: 64px;
+    background: var(--black);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 22px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .asset-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .asset-info-main { min-width: 0; }
+  .asset-info-name { font-size: 14px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 4px; }
+  .asset-info-meta { font-size: 11px; color: var(--gray-500); display: flex; gap: 12px; flex-wrap: wrap; }
+  .asset-price-block { text-align: right; }
+  .asset-price { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; }
+  .asset-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 4px;
+    padding: 2px 8px;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+  }
+  .asset-trend.up { color: var(--black); }
+  .asset-trend.down { color: var(--gray-500); }
+  .asset-trend svg { width: 10px; height: 10px; }
+  .asset-sparkline {
+    width: 100px;
+    height: 32px;
+  }
+  .asset-sparkline path {
+    fill: none;
+    stroke: var(--black);
+    stroke-width: 1.5;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 400;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--white);
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalIn 0.3s ease;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .modal-header {
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .modal-title small {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-500);
+    margin-top: 2px;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    color: var(--gray-500);
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--black); }
+  .modal-body { padding: 28px; }
+  .modal-footer {
+    padding: 20px 28px;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 24px; right: 24px;
+    background: var(--black);
+    color: var(--white);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    transform: translateX(calc(100% + 40px));
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 600;
+  }
+  .toast.show { transform: translateX(0); }
+  .toast-icon {
+    width: 24px; height: 24px;
+    flex-shrink: 0;
+  }
+  .toast-content { flex: 1; min-width: 0; }
+  .toast-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .toast-sub { font-size: 11px; color: rgba(255,255,255,0.6); }
+
+  /* Verified badge */
+  .verified-badge {
+    display: inline-flex;
+    width: 16px; height: 16px;
+    background: var(--black);
+    color: var(--white);
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 60px 32px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .empty-icon {
+    width: 56px; height: 56px;
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-500);
+  }
+  .empty-title { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; }
+  .empty-sub { font-size: 12px; color: var(--gray-500); max-width: 320px; line-height: 1.5; }
+
+  /* User detail */
+  .user-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .user-detail-item {
+    padding: 14px;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+  }
+  .user-detail-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 6px;
+  }
+  .user-detail-value {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    word-break: break-all;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+  .sidebar ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 90;
+  }
+  .overlay.active { display: block; }
+
+  /* Responsive */
+  @media (max-width: 1200px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .menu-toggle { display: flex; }
+    .content { padding: 24px 20px; }
+    .topbar { padding: 0 20px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .user-detail-grid { grid-template-columns: 1fr; }
+    .asset-list-item { grid-template-columns: 60px 1fr; }
+    .asset-list-item > :nth-child(n+3) { grid-column: 2; }
+    .asset-sparkline { display: none; }
+    .login-header, .login-body, .login-footer { padding-left: 24px; padding-right: 24px; }
+  }
+  @media (max-width: 600px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .data-table th, .data-table td { padding: 12px 16px; }
+    .section-header { padding: 16px; }
+    .form-grid { padding: 20px; }
+    .env-badge { display: none; }
+    .asset-list-item { padding: 16px; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN PAGE ============ -->
+<div class="login-page" id="loginPage">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo">V</div>
+      <div class="login-title">Admin Control Panel</div>
+      <div class="login-subtitle">Veto Cash · Restricted Access · June 2026</div>
+    </div>
+    <div class="login-body">
+      <div class="login-warning">
+        <svg class="login-warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 9v4M12 17h.01"/>
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        </svg>
+        <div class="login-warning-text">
+          <strong>Authorized personnel only.</strong> This panel is restricted to Veto Financial administrators. All actions are logged and audited.
+        </div>
+      </div>
+      <button class="btn-google-login" onclick="adminGoogleLogin()">
+        <svg width="18" height="18" viewBox="0 0 48 48">
+          <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
+          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+          <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+          <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.1 5.6l6.2 5.2c-.4.4 6.6-4.8 6.6-14.8 0-1.2-.1-2.4-.4-3.5z"/>
+        </svg>
+        Sign in with Google (Admin)
+      </button>
+    </div>
+    <div class="login-footer">
+      © 2026 Veto Financial Company · Secure Admin Portal
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADMIN DASHBOARD ============ -->
+<div class="admin-page" id="adminPage">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="#" class="logo">
+        <div class="logo-mark">V</div>
+        <div class="logo-text">
+          Veto Cash
+          <small>Admin Panel</small>
+        </div>
+      </a>
+    </div>
+
+    <nav class="nav-section">
+      <div class="nav-label">Overview</div>
+      <button class="nav-item active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/>
+          <rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>
+        </svg>
+        Dashboard
+      </button>
+
+      <div class="nav-label" style="margin-top: 20px;">Assets</div>
+      <button class="nav-item" data-view="mint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Issue New Asset
+      </button>
+      <button class="nav-item" data-view="assets">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M3 9h18M9 21V9"/>
+        </svg>
+        All Assets
+        <span class="nav-badge" id="assetsBadge">0</span>
+      </button>
+
+      <div class="nav-label" style="margin-top: 20px;">Finance</div>
+      <button class="nav-item" data-view="deposits">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+        </svg>
+        Pending Deposits
+        <span class="nav-badge alert" id="depositsBadge">0</span>
+      </button>
+      <button class="nav-item" data-view="withdrawals">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+        </svg>
+        Withdrawal Queue
+        <span class="nav-badge alert" id="withdrawalsBadge">0</span>
+      </button>
+      <button class="nav-item" data-view="balances">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        Balance Control
+      </button>
+
+      <div class="nav-label" style="margin-top: 20px;">Users</div>
+      <button class="nav-item" data-view="users">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        User Management
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-card" onclick="signOutAdmin()">
+        <div class="admin-avatar" id="adminAvatar">A</div>
+        <div class="admin-info">
+          <div class="admin-name" id="adminName">Admin</div>
+          <div class="admin-role">Super Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <div class="page-title">
+          <span id="pageTitleText">Dashboard</span>
+          <small id="currentDate">Saturday, June 20, 2026</small>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="env-badge">Production</div>
+        <button class="icon-btn" aria-label="Refresh" onclick="refreshData()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+        </button>
+        <button class="icon-btn" aria-label="Sign Out" onclick="signOutAdmin()" title="Sign Out">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ============ DASHBOARD VIEW ============ -->
+      <div class="view active" id="view-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value" id="statUsers">0</div>
+            <div class="stat-change">▲ Active accounts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Issued Assets</div>
+            <div class="stat-value" id="statAssets">0</div>
+            <div class="stat-change">◆ Digital cards</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Pending Deposits</div>
+            <div class="stat-value" id="statDeposits">0</div>
+            <div class="stat-change">⏳ Awaiting approval</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Pending Withdrawals</div>
+            <div class="stat-value" id="statWithdrawals">0</div>
+            <div class="stat-change">⏳ Review required</div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-title">
+              Recent Platform Activity
+              <small>Live feed of system events</small>
+            </div>
+          </div>
+          <div id="activityFeed">
+            <div class="empty-state">
+              <div class="empty-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div class="empty-title">Activity will appear here</div>
+              <div class="empty-sub">System events, approvals, and user actions are logged in real-time</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ MINT ASSET VIEW ============ -->
+      <div class="view" id="view-mint">
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-title">
+              Issue New Digital Asset
+              <small>Create and mint a new rare digital card for the marketplace</small>
+            </div>
+          </div>
+          <form id="mintForm" onsubmit="mintAsset(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Asset Name *</label>
+                <input type="text" class="form-input" id="assetName" placeholder="e.g. Genesis Fragment" required />
+                <div class="form-hint">Unique name for the digital asset</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Price per Copy (USDT) *</label>
+                <input type="number" class="form-input" id="assetPrice" placeholder="0.00" step="0.01" min="0.01" required />
+                <div class="form-hint">Price in USDT for each copy</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Number of Copies *</label>
+                <input type="number" class="form-input" id="assetCopies" placeholder="1" min="1" required />
+                <div class="form-hint">How many copies available for trade</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Total Supply *</label>
+                <input type="number" class="form-input" id="assetSupply" placeholder="1" min="1" required />
+                <div class="form-hint">Maximum total supply (fixed)</div>
+              </div>
+
+              <div class="form-group full">
+                <label class="form-label">Asset Image *</label>
+                <label class="file-upload" id="fileUploadLabel">
+                  <svg class="file-upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  <div class="file-upload-text" id="fileUploadText">Click to upload image</div>
+                  <div class="file-upload-sub">PNG, JPG, or GIF · Max 2MB</div>
+                  <input type="file" id="assetImage" accept="image/*" style="display:none;" required />
+                  <img class="file-preview" id="filePreview" alt="Preview" />
+                </label>
+              </div>
+
+              <div class="form-group full">
+                <label class="form-label">Description (Optional)</label>
+                <textarea class="form-textarea" id="assetDesc" placeholder="Describe the rarity, provenance, or background of this asset..."></textarea>
+              </div>
+            </div>
+
+            <div style="padding: 20px 24px; border-top: 1px solid var(--gray-200); display: flex; gap: 10px; justify-content: flex-end;">
+              <button type="button" class="btn btn-secondary" onclick="resetMintForm()">Reset</button>
+              <button type="submit" class="btn btn-primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Mint Asset
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ============ ASSETS LIST VIEW ============ -->
+      <div class="view" id="view-assets">
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-title">
+              Issued Assets
+              <small>All digital cards currently in circulation</small>
+            </div>
+            <button class="btn btn-primary" onclick="switchView('mint')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Issue New
+            </button>
+          </div>
+          <div id="assetsList">
+            <div class="empty-state">
+              <div class="empty-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <path d="M3 9h18M9 21V9"/>
+                </svg>
+              </div>
+              <div class="empty-title">No assets issued yet</div>
+              <div class="empty-sub">Issue your first digital asset to start building the marketplace</div>
+              <button class="btn btn-primary" style="margin-top: 8px;" onclick="switchView('mint')">Issue First Asset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ DEPOSITS VIEW ============ -->
+      <div class="view" id="view-deposits">
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-title">
+              Pending Deposits
+              <small>Verify blockchain transactions and credit user balances</small>
+            </div>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="data-table" id="depositsTable">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Asset</th>
+                  <th>Amount</th>
+                  <th>Transaction Hash</th>
+                  <th>Submitted</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="depositsBody"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="depositsEmpty" style="display:none;">
+            <div class="empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div class="empty-title">All clear</div>
+            <div class="empty-sub">No pending deposits to review</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ WITHDRAWALS VIEW ============ -->
+      <div class="view" id="view-withdrawals">
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-title">
+              Withdrawal Queue
+              <small>Review and process user withdrawal requests</small>
+            </div>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="data-table" id="withdrawalsTable">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Asset</th>
+                  <th>Amount</th>
+                  <th>Destination Address</th>
+                  <th>Requested</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="withdrawalsBody"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="withdrawalsEmpty" style="display:none;">
+            <div class="empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div class="empty-title">Queue is empty</div>
+            <div class="empty-sub">No withdrawal requests pending review</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ BALANCES VIEW ============ -->
+      <div class="view" id="view-balances">
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-title">
+              Balance Control & Internal Ledger
+              <small>Adjust user balances manually for off-chain settlements</small>
+            </div>
+          </div>
+          <div style="padding: 24px;">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Select User</label>
+                <select class="form-select" id="balanceUser"></select>
+                <div class="form-hint">Choose the user whose balance to adjust</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Operation Type</label>
+                <select class="form-select" id="balanceOperation">
+                  <option value="credit">Credit (Add Funds)</option>
+                  <option value="debit">Debit (Remove Funds)</option>
+                  <option value="set">Set Exact Balance</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Amount (USDT)</label>
+                <input type="number" class="form-input" id="balanceAmount" placeholder="0.00" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Reason / Reference</label>
+                <input type="text" class="form-input" id="balanceReason" placeholder="e.g. Local agent settlement" />
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Admin Notes (Internal)</label>
+                <textarea class="form-textarea" id="balanceNotes" placeholder="Document the reason for this adjustment..."></textarea>
+                <div class="form-hint">These notes are logged permanently for audit purposes</div>
+              </div>
+            </div>
+            <div style="padding: 0 24px 24px; display: flex; gap: 10px; justify-content: flex-end;">
+              <button class="btn btn-primary" onclick="adjustBalance()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Apply Adjustment
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-title">
+              Adjustment History
+              <small>Permanent audit log of all balance modifications</small>
+            </div>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>User</th>
+                  <th>Operation</th>
+                  <th>Amount</th>
+                  <th>Reason</th>
+                  <th>Admin</th>
+                </tr>
+              </thead>
+              <tbody id="balanceHistoryBody"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="balanceHistoryEmpty">
+            <div class="empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div class="empty-title">No adjustments yet</div>
+            <div class="empty-sub">Balance modifications will be logged here</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ USERS VIEW ============ -->
+      <div class="view" id="view-users">
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-title">
+              User Management
+              <small>All registered platform members</small>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" class="form-input" id="userSearch" placeholder="Search users..." style="padding: 8px 12px; font-size: 13px; width: 220px;" oninput="renderUsers()" />
+            </div>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Balance</th>
+                  <th>Assets Owned</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersBody"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="usersEmpty" style="display:none;">
+            <div class="empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="empty-title">No users registered</div>
+            <div class="empty-sub">Users will appear here as they sign up on the platform</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ============ USER DETAIL MODAL ============ -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal" style="max-width: 640px;">
+    <div class="modal-header">
+      <div class="modal-title">
+        User Details
+        <small id="userModalName">User</small>
+      </div>
+      <button class="modal-close" onclick="closeUserModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body" id="userModalBody"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-icon" id="toastIcon">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  </div>
+  <div class="toast-content">
+    <div class="toast-title" id="toastTitle">Success</div>
+    <div class="toast-sub" id="toastSub">Action completed</div>
+  </div>
+</div>
+
+<script>
+  // ============================
+  // CONFIG
+  // ============================
+  const GOOGLE_CLIENT_ID = '87782471218-5l9ash65tp6qg6pebvtapo4ebr51q7c2.apps.googleusercontent.com';
+  // Authorized admin emails (whitelist)
+  const AUTHORIZED_ADMINS = [
+    // Add authorized admin emails here. For demo, any email is allowed.
+    // Example: 'admin@vetocash.com'
+  ];
+
+  let adminUser = null;
+
+  // ============================
+  // STATE (persisted in localStorage)
+  // ============================
+  const state = {
+    users: [],
+    assets: [],
+    deposits: [],
+    withdrawals: [],
+    balanceHistory: [],
+    activityLog: []
+  };
+
+  function saveState() {
+    try {
+      localStorage.setItem('veto_admin_state', JSON.stringify(state));
+    } catch (e) {}
+  }
+
+  function loadState() {
+    try {
+      const saved = localStorage.getItem('veto_admin_state');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        Object.assign(state, parsed);
+      } else {
+        seedDemoData();
+      }
+    } catch (e) {
+      seedDemoData();
+    }
+  }
+
+  // Seed demo data for demonstration
+  function seedDemoData() {
+    state.users = [
+      {
+        id: 'U001',
+        name: 'Alexander K.',
+        email: 'alex.k@example.com',
+        picture: null,
+        balance: 47293.00,
+        assets: ['CryptoArtifact #0421', 'Genesis Fragment'],
+        ip: '185.243.112.47',
+        fingerprint: 'fp_8a3f2c9b4e1d',
+        browser: 'Chrome 124 · macOS',
+        verified: true,
+        joined: '2026-04-12'
+      },
+      {
+        id: 'U002',
+        name: 'Elena V.',
+        email: 'elena.v@example.com',
+        picture: null,
+        balance: 18420.50,
+        assets: ['Obsidian Token'],
+        ip: '91.203.14.82',
+        fingerprint: 'fp_4c7e1a8f3b2d',
+        browser: 'Safari 17 · iOS',
+        verified: false,
+        joined: '2026-05-03'
+      },
+      {
+        id: 'U003',
+        name: 'James K.',
+        email: 'james.k@example.com',
+        picture: null,
+        balance: 3240.00,
+        assets: [],
+        ip: '178.62.91.15',
+        fingerprint: 'fp_9d2f5e8c1a4b',
+        browser: 'Firefox 126 · Linux',
+        verified: false,
+        joined: '2026-05-28'
+      },
+      {
+        id: 'U004',
+        name: 'Sophie L.',
+        email: 'sophie.l@example.com',
+        picture: null,
+        balance: 124800.00,
+        assets: ['Archive #0087', 'Nexus Shard', 'CryptoArtifact #0421'],
+        ip: '104.28.203.44',
+        fingerprint: 'fp_2b8a4d1f9e3c',
+        browser: 'Chrome 125 · Windows',
+        verified: true,
+        joined: '2026-03-18'
+      }
+    ];
+
+    state.deposits = [
+      {
+        id: 'D001',
+        userId: 'U002',
+        userName: 'Elena V.',
+        crypto: 'USDT',
+        amount: 5000,
+        txHash: '0x8a3f2c9b4e1d7f6a5c8b9d0e1f2a3b4c5d6e7f8a',
+        submitted: '2026-06-20 14:32',
+        status: 'pending'
+      },
+      {
+        id: 'D002',
+        userId: 'U003',
+        userName: 'James K.',
+        crypto: 'BTC',
+        amount: 1250,
+        txHash: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+        submitted: '2026-06-20 11:08',
+        status: 'pending'
+      }
+    ];
+
+    state.withdrawals = [
+      {
+        id: 'W001',
+        userId: 'U001',
+        userName: 'Alexander K.',
+        crypto: 'USDT',
+        amount: 2500,
+        address: 'TVN5qwxP9mKz3FhR7jLxYc2BnV8WdE4pQs',
+        requested: '2026-06-20 09:47',
+        status: 'pending'
+      },
+      {
+        id: 'W002',
+        userId: 'U004',
+        userName: 'Sophie L.',
+        crypto: 'ETH',
+        amount: 850,
+        address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
+        requested: '2026-06-19 22:15',
+        status: 'pending'
+      }
+    ];
+
+    state.assets = [
+      {
+        id: 'A001',
+        name: 'CryptoArtifact #0421',
+        price: 12450.00,
+        copies: 1,
+        totalSupply: 1,
+        description: 'Ultra-rare 1 of 1 digital artifact',
+        image: null,
+        trend: generateTrend(12450, 30),
+        createdAt: '2026-05-15'
+      },
+      {
+        id: 'A002',
+        name: 'Genesis Fragment',
+        price: 8920.50,
+        copies: 7,
+        totalSupply: 50,
+        description: 'Limited edition fragment series',
+        image: null,
+        trend: generateTrend(8920, 30),
+        createdAt: '2026-05-22'
+      }
+    ];
+
+    saveState();
+  }
+
+  function generateTrend(basePrice, days) {
+    const trend = [];
+    let price = basePrice * (0.85 + Math.random() * 0.1);
+    for (let i = 0; i < days; i++) {
+      price += (Math.random() - 0.45) * (basePrice * 0.02);
+      price = Math.max(basePrice * 0.7, Math.min(basePrice * 1.2, price));
+      trend.push(price);
+    }
+    trend[trend.length - 1] = basePrice;
+    return trend;
+  }
+
+  function addActivity(type, message) {
+    state.activityLog.unshift({
+      id: 'ACT' + Date.now(),
+      type,
+      message,
+      timestamp: new Date().toISOString(),
+      admin: adminUser ? adminUser.name : 'System'
+    });
+    if (state.activityLog.length > 50) state.activityLog.pop();
+    saveState();
+  }
+
+  // ============================
+  // GOOGLE AUTH
+  // ============================
+  function decodeJwt(token) {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      ).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (e) { return null; }
+  }
+
+  function handleAdminLogin(response) {
+    const decoded = decodeJwt(response.credential);
+    if (!decoded) {
+      showToast('Login Failed', 'Could not decode credentials', false);
+      return;
+    }
+
+    // Check whitelist if configured
+    if (AUTHORIZED_ADMINS.length > 0 && !AUTHORIZED_ADMINS.includes(decoded.email)) {
+      showToast('Access Denied', 'Your email is not authorized for admin access', false);
+      return;
+    }
+
+    adminUser = {
+      name: decoded.name || 'Admin',
+      email: decoded.email || '',
+      picture: decoded.picture || null,
+      sub: decoded.sub || ''
+    };
+
+    try {
+      localStorage.setItem('veto_admin_user', JSON.stringify(adminUser));
+    } catch (e) {}
+
+    showAdminDashboard();
+    showToast('Welcome', `Signed in as ${adminUser.name}`, true);
+  }
+
+  function adminGoogleLogin() {
+    if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+      google.accounts.id.prompt();
+    } else {
+      // Fallback for demo: simulate login
+      setTimeout(() => {
+        adminUser = {
+          name: 'Admin User',
+          email: 'admin@vetocash.com',
+          picture: null,
+          sub: 'ADMIN001'
+        };
+        try {
+          localStorage.setItem('veto_admin_user', JSON.stringify(adminUser));
+        } catch (e) {}
+        showAdminDashboard();
+        showToast('Welcome', 'Signed in as Admin User', true);
+      }, 500);
+    }
+  }
+
+  function initGoogleSignIn() {
+    if (typeof google === 'undefined' || !google.accounts) {
+      setTimeout(initGoogleSignIn, 100);
+      return;
+    }
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleAdminLogin,
+      auto_select: false,
+      cancel_on_tap_outside: true
+    });
+  }
+
+  function restoreAdminSession() {
+    try {
+      const saved = localStorage.getItem('veto_admin_user');
+      if (saved) {
+        adminUser = JSON.parse(saved);
+        showAdminDashboard();
+      }
+    } catch (e) {}
+  }
+
+  function showAdminDashboard() {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('adminPage').classList.add('active');
+
+    const avatar = document.getElementById('adminAvatar');
+    const name = document.getElementById('adminName');
+    if (adminUser.picture) {
+      avatar.innerHTML = `<img src="${adminUser.picture}" alt="" />`;
+    } else {
+      avatar.textContent = (adminUser.name || 'A').charAt(0).toUpperCase();
+    }
+    name.textContent = adminUser.name;
+
+    renderAll();
+  }
+
+  function signOutAdmin() {
+    adminUser = null;
+    try {
+      localStorage.removeItem('veto_admin_user');
+    } catch (e) {}
+    if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+      google.accounts.id.disableAutoSelect();
+    }
+    document.getElementById('adminPage').classList.remove('active');
+    document.getElementById('loginPage').style.display = 'flex';
+    showToast('Signed Out', 'Admin session ended', true);
+  }
+
+  // ============================
+  // NAVIGATION
+  // ============================
+  function switchView(viewName) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const target = document.getElementById('view-' + viewName);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navItem = document.querySelector(`.nav-item[data-view="${viewName}"]`);
+    if (navItem) navItem.classList.add('active');
+
+    const titles = {
+      dashboard: 'Dashboard',
+      mint: 'Issue New Asset',
+      assets: 'All Assets',
+      deposits: 'Pending Deposits',
+      withdrawals: 'Withdrawal Queue',
+      balances: 'Balance Control',
+      users: 'User Management'
+    };
+    document.getElementById('pageTitleText').textContent = titles[viewName] || 'Dashboard';
+
+    // Close mobile menu
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('active');
+    window.scrollTo(0, 0);
+  }
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      switchView(item.dataset.view);
+    });
+  });
+
+  // Mobile menu
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  const menuToggle = document.getElementById('menuToggle');
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.add('open');
+    overlay.classList.add('active');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+  });
+
+  // ============================
+  // RENDERING
+  // ============================
+  function renderAll() {
+    renderDashboardStats();
+    renderActivityFeed();
+    renderAssets();
+    renderDeposits();
+    renderWithdrawals();
+    renderUsers();
+    renderBalanceUsers();
+    renderBalanceHistory();
+    updateBadges();
+  }
+
+  function renderDashboardStats() {
+    document.getElementById('statUsers').textContent = state.users.length.toLocaleString();
+    document.getElementById('statAssets').textContent = state.assets.length.toLocaleString();
+    document.getElementById('statDeposits').textContent = state.deposits.filter(d => d.status === 'pending').length;
+    document.getElementById('statWithdrawals').textContent = state.withdrawals.filter(w => w.status === 'pending').length;
+  }
+
+  function renderActivityFeed() {
+    const feed = document.getElementById('activityFeed');
+    if (state.activityLog.length === 0) {
+      feed.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="empty-title">Activity will appear here</div>
+          <div class="empty-sub">System events, approvals, and user actions are logged in real-time</div>
+        </div>
+      `;
+      return;
+    }
+
+    feed.innerHTML = state.activityLog.slice(0, 10).map(act => {
+      const time = new Date(act.timestamp).toLocaleString('en-US', {
+        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
+      });
+      return `
+        <div style="padding: 14px 24px; border-bottom: 1px solid var(--gray-100); display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+            <div style="width: 8px; height: 8px; background: var(--black); border-radius: 50%; flex-shrink: 0;"></div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 13px; font-weight: 500;">${act.message}</div>
+              <div style="font-size: 11px; color: var(--gray-500); margin-top: 2px;">by ${act.admin}</div>
+            </div>
+          </div>
+          <div style="font-size: 11px; color: var(--gray-500); white-space: nowrap;">${time}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ============================
+  // ASSETS
+  // ============================
+  function renderAssets() {
+    const list = document.getElementById('assetsList');
+    if (state.assets.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M3 9h18M9 21V9"/>
+            </svg>
+          </div>
+          <div class="empty-title">No assets issued yet</div>
+          <div class="empty-sub">Issue your first digital asset to start building the marketplace</div>
+          <button class="btn btn-primary" style="margin-top: 8px;" onclick="switchView('mint')">Issue First Asset</button>
+        </div>
+      `;
+      return;
+    }
+
+    list.innerHTML = state.assets.map(asset => {
+      const trend = asset.trend || [];
+      const first = trend[0] || asset.price;
+      const last = trend[trend.length - 1] || asset.price;
+      const change = ((last - first) / first) * 100;
+      const isUp = change >= 0;
+
+      const sparkline = generateSparkline(trend);
+      const initial = asset.name.charAt(0).toUpperCase();
+
+      return `
+        <div class="asset-list-item">
+          <div class="asset-thumb">
+            ${asset.image ? `<img src="${asset.image}" alt="" />` : initial}
+          </div>
+          <div class="asset-info-main">
+            <div class="asset-info-name">${asset.name}</div>
+            <div class="asset-info-meta">
+              <span>ID: ${asset.id}</span>
+              <span>·</span>
+              <span>${asset.copies}/${asset.totalSupply} copies</span>
+              <span>·</span>
+              <span>Minted ${asset.createdAt}</span>
+            </div>
+          </div>
+          <div class="asset-sparkline">${sparkline}</div>
+          <div class="asset-price-block">
+            <div class="asset-price">${formatNum(asset.price)} USDT</div>
+            <div class="asset-trend ${isUp ? 'up' : 'down'}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                ${isUp ? '<polyline points="18 15 12 9 6 15"/>' : '<polyline points="6 9 12 15 18 9"/>'}
+              </svg>
+              ${isUp ? '+' : ''}${change.toFixed(2)}% · 30d
+            </div>
+          </div>
+          <div class="action-group">
+            <button class="btn btn-danger btn-sm" onclick="deleteAsset('${asset.id}')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
+              </svg>
+              Remove
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function generateSparkline(data) {
+    if (!data || data.length < 2) return '';
+    const width = 100, height = 32;
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min || 1;
+    const points = data.map((v, i) => {
+      const x = (i / (data.length - 1)) * width;
+      const y = height - ((v - min) / range) * (height - 4) - 2;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    return `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none"><path d="M ${points.replace(/ /g, ' L ')}"/></svg>`;
+  }
+
+  // File upload handling
+  const fileInput = document.getElementById('assetImage');
+  const filePreview = document.getElementById('filePreview');
+  const fileUploadLabel = document.getElementById('fileUploadLabel');
+  const fileUploadText = document.getElementById('fileUploadText');
+  let uploadedImageData = null;
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('File Too Large', 'Maximum size is 2MB', false);
+      fileInput.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      uploadedImageData = ev.target.result;
+      filePreview.src = uploadedImageData;
+      filePreview.classList.add('show');
+      fileUploadLabel.classList.add('has-file');
+      fileUploadText.textContent = file.name;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function mintAsset(e) {
+    e.preventDefault();
+    const name = document.getElementById('assetName').value.trim();
+    const price = parseFloat(document.getElementById('assetPrice').value);
+    const copies = parseInt(document.getElementById('assetCopies').value);
+    const supply = parseInt(document.getElementById('assetSupply').value);
+    const desc = document.getElementById('assetDesc').value.trim();
+
+    if (!name || !price || !copies || !supply) {
+      showToast('Missing Fields', 'Please fill all required fields', false);
+      return;
+    }
+
+    if (copies > supply) {
+      showToast('Invalid Supply', 'Copies cannot exceed total supply', false);
+      return;
+    }
+
+    const newAsset = {
+      id: 'A' + String(state.assets.length + 1).padStart(3, '0'),
+      name,
+      price,
+      copies,
+      totalSupply: supply,
+      description: desc,
+      image: uploadedImageData,
+      trend: generateTrend(price, 30),
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    state.assets.push(newAsset);
+    addActivity('asset_minted', `Minted new asset: ${name} (${copies}/${supply} copies @ ${formatNum(price)} USDT)`);
+    saveState();
+    renderAll();
+
+    resetMintForm();
+    showToast('Asset Minted', `${name} has been issued successfully`, true);
+    switchView('assets');
+  }
+
+  function resetMintForm() {
+    document.getElementById('mintForm').reset();
+    filePreview.classList.remove('show');
+    filePreview.src = '';
+    fileUploadLabel.classList.remove('has-file');
+    fileUploadText.textContent = 'Click to upload image';
+    uploadedImageData = null;
+  }
+
+  function deleteAsset(assetId) {
+    const asset = state.assets.find(a => a.id === assetId);
+    if (!asset) return;
+
+    if (!confirm(`Remove "${asset.name}" from the marketplace?\n\nThis will also remove all circulating copies from user holdings.`)) {
+      return;
+    }
+
+    // Remove from all users' holdings
+    state.users.forEach(user => {
+      user.assets = user.assets.filter(a => a !== asset.name);
+    });
+
+    state.assets = state.assets.filter(a => a.id !== assetId);
+    addActivity('asset_removed', `Removed asset: ${asset.name} (circulating copies deleted)`);
+    saveState();
+    renderAll();
+    showToast('Asset Removed', `${asset.name} deleted from marketplace`, true);
+  }
+
+  // ============================
+  // DEPOSITS
+  // ============================
+  function renderDeposits() {
+    const body = document.getElementById('depositsBody');
+    const empty = document.getElementById('depositsEmpty');
+    const table = document.getElementById('depositsTable');
+
+    if (state.deposits.length === 0) {
+      table.style.display = 'none';
+      empty.style.display = 'flex';
+      return;
+    }
+
+    table.style.display = 'table';
+    empty.style.display = 'none';
+
+    body.innerHTML = state.deposits.map(d => `
+      <tr>
+        <td>
+          <div class="cell-main">${d.userName}</div>
+          <div class="cell-sub">${d.userId}</div>
+        </td>
+        <td><div class="cell-main">${d.crypto}</div></td>
+        <td><div class="cell-main">${formatNum(d.amount)} ${d.crypto}</div></td>
+        <td><span class="cell-mono" title="${d.txHash}">${d.txHash}</span></td>
+        <td><div class="cell-sub">${d.submitted}</div></td>
+        <td><span class="status-pill ${d.status}">${d.status}</span></td>
+        <td>
+          <div class="action-group">
+            ${d.status === 'pending' ? `
+              <button class="btn btn-primary btn-sm" onclick="approveDeposit('${d.id}')">Approve</button>
+              <button class="btn btn-danger btn-sm" onclick="rejectDeposit('${d.id}')">Reject</button>
+            ` : `<span style="font-size: 11px; color: var(--gray-500);">Processed</span>`}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function approveDeposit(depositId) {
+    const deposit = state.deposits.find(d => d.id === depositId);
+    if (!deposit || deposit.status !== 'pending') return;
+
+    const user = state.users.find(u => u.id === deposit.userId);
+    if (user) {
+      user.balance += deposit.amount;
+    }
+
+    deposit.status = 'approved';
+    addActivity('deposit_approved', `Approved deposit: ${formatNum(deposit.amount)} ${deposit.crypto} for ${deposit.userName} (TX: ${deposit.txHash.slice(0, 12)}...)`);
+    saveState();
+    renderAll();
+    showToast('Deposit Approved', `${formatNum(deposit.amount)} ${deposit.crypto} credited to ${deposit.userName}`, true);
+  }
+
+  function rejectDeposit(depositId) {
+    const deposit = state.deposits.find(d => d.id === depositId);
+    if (!deposit || deposit.status !== 'pending') return;
+
+    if (!confirm(`Reject deposit of ${formatNum(deposit.amount)} ${deposit.crypto} from ${deposit.userName}?`)) return;
+
+    deposit.status = 'rejected';
+    addActivity('deposit_rejected', `Rejected deposit: ${formatNum(deposit.amount)} ${deposit.crypto} from ${deposit.userName}`);
+    saveState();
+    renderAll();
+    showToast('Deposit Rejected', 'Deposit marked as rejected', true);
+  }
+
+  // ============================
+  // WITHDRAWALS
+  // ============================
+  function renderWithdrawals() {
+    const body = document.getElementById('withdrawalsBody');
+    const empty = document.getElementById('withdrawalsEmpty');
+    const table = document.getElementById('withdrawalsTable');
+
+    if (state.withdrawals.length === 0) {
+      table.style.display = 'none';
+      empty.style.display = 'flex';
+      return;
+    }
+
+    table.style.display = 'table';
+    empty.style.display = 'none';
+
+    body.innerHTML = state.withdrawals.map(w => `
+      <tr>
+        <td>
+          <div class="cell-main">${w.userName}</div>
+          <div class="cell-sub">${w.userId}</div>
+        </td>
+        <td><div class="cell-main">${w.crypto}</div></td>
+        <td><div class="cell-main">${formatNum(w.amount)} ${w.crypto}</div></td>
+        <td><span class="cell-mono" title="${w.address}">${w.address}</span></td>
+        <td><div class="cell-sub">${w.requested}</div></td>
+        <td><span class="status-pill ${w.status}">${w.status}</span></td>
+        <td>
+          <div class="action-group">
+            ${w.status === 'pending' ? `
+              <button class="btn btn-primary btn-sm" onclick="approveWithdrawal('${w.id}')">Approve</button>
+              <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${w.id}')">Reject</button>
+            ` : `<span style="font-size: 11px; color: var(--gray-500);">Processed</span>`}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function approveWithdrawal(withdrawalId) {
+    const w = state.withdrawals.find(x => x.id === withdrawalId);
+    if (!w || w.status !== 'pending') return;
+
+    w.status = 'approved';
+    addActivity('withdrawal_approved', `Approved withdrawal: ${formatNum(w.amount)} ${w.crypto} to ${w.userName} (Address: ${w.address.slice(0, 12)}...)`);
+    saveState();
+    renderAll();
+    showToast('Withdrawal Approved', `${formatNum(w.amount)} ${w.crypto} released to ${w.userName}`, true);
+  }
+
+  function rejectWithdrawal(withdrawalId) {
+    const w = state.withdrawals.find(x => x.id === withdrawalId);
+    if (!w || w.status !== 'pending') return;
+
+    if (!confirm(`Reject withdrawal of ${formatNum(w.amount)} ${w.crypto} from ${w.userName}?\n\nFunds will be returned to their balance.`)) return;
+
+    const user = state.users.find(u => u.id === w.userId);
+    if (user) {
+      user.balance += w.amount;
+    }
+
+    w.status = 'rejected';
+    addActivity('withdrawal_rejected', `Rejected withdrawal: ${formatNum(w.amount)} ${w.crypto} from ${w.userName} (funds returned)`);
+    saveState();
+    renderAll();
+    showToast('Withdrawal Rejected', 'Funds returned to user balance', true);
+  }
+
+  // ============================
+  // USERS
+  // ============================
+  function renderUsers() {
+    const body = document.getElementById('usersBody');
+    const empty = document.getElementById('usersEmpty');
+    const search = (document.getElementById('userSearch').value || '').toLowerCase();
+
+    const filtered = state.users.filter(u =>
+      u.name.toLowerCase().includes(search) ||
+      u.email.toLowerCase().includes(search) ||
+      u.id.toLowerCase().includes(search)
+    );
+
+    if (filtered.length === 0) {
+      body.innerHTML = '';
+      empty.style.display = 'flex';
+      return;
+    }
+
+    empty.style.display = 'none';
+
+    body.innerHTML = filtered.map(u => {
+      const initial = u.name.charAt(0).toUpperCase();
+      return `
+        <tr>
+          <td>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 32px; height: 32px; background: var(--black); color: var(--white); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; overflow: hidden;">
+                ${u.picture ? `<img src="${u.picture}" style="width:100%;height:100%;object-fit:cover;" />` : initial}
+              </div>
+              <div>
+                <div class="cell-main">
+                  ${u.name}
+                  ${u.verified ? `<span class="verified-badge" title="Verified"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>` : ''}
+                </div>
+                <div class="cell-sub">${u.id}</div>
+              </div>
+            </div>
+          </td>
+          <td><div class="cell-sub">${u.email}</div></td>
+          <td><div class="cell-main">${formatNum(u.balance)} USDT</div></td>
+          <td><div class="cell-main">${u.assets.length}</div><div class="cell-sub">assets owned</div></td>
+          <td><span class="status-pill ${u.verified ? 'verified' : 'pending'}">${u.verified ? 'Verified' : 'Unverified'}</span></td>
+          <td>
+            <div class="action-group">
+              <button class="btn btn-secondary btn-sm" onclick="viewUser('${u.id}')">View</button>
+              <button class="btn ${u.verified ? 'btn-danger' : 'btn-primary'} btn-sm" onclick="toggleVerified('${u.id}')">
+                ${u.verified ? 'Revoke Badge' : 'Grant Badge'}
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function viewUser(userId) {
+    const user = state.users.find(u => u.id === userId);
+    if (!user) return;
+
+    document.getElementById('userModalName').textContent = user.name + (user.verified ? ' ✓' : '');
+
+    const body = document.getElementById('userModalBody');
+    body.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--gray-200);">
+        <div style="width: 64px; height: 64px; background: var(--black); color: var(--white); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 24px; flex-shrink: 0; overflow: hidden;">
+          ${user.picture ? `<img src="${user.picture}" style="width:100%;height:100%;object-fit:cover;" />` : user.name.charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <div style="font-size: 18px; font-weight: 700; letter-spacing: -0.3px;">
+            ${user.name}
+            ${user.verified ? `<span class="verified-badge" style="width: 18px; height: 18px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>` : ''}
+          </div>
+          <div style="font-size: 12px; color: var(--gray-500); margin-top: 2px;">${user.email}</div>
+          <div style="font-size: 11px; color: var(--gray-500); margin-top: 4px;">Member since ${user.joined}</div>
+        </div>
+      </div>
+
+      <div class="user-detail-grid">
+        <div class="user-detail-item">
+          <div class="user-detail-label">Wallet Balance</div>
+          <div class="user-detail-value">${formatNum(user.balance)} USDT</div>
+        </div>
+        <div class="user-detail-item">
+          <div class="user-detail-label">Assets Owned</div>
+          <div class="user-detail-value">${user.assets.length > 0 ? user.assets.join(', ') : 'None'}</div>
+        </div>
+        <div class="user-detail-item">
+          <div class="user-detail-label">IP Address</div>
+          <div class="user-detail-value" style="font-family: 'Courier New', monospace; font-size: 12px;">${user.ip}</div>
+        </div>
+        <div class="user-detail-item">
+          <div class="user-detail-label">Browser Fingerprint</div>
+          <div class="user-detail-value" style="font-family: 'Courier New', monospace; font-size: 12px;">${user.fingerprint}</div>
+        </div>
+        <div class="user-detail-item" style="grid-column: 1 / -1;">
+          <div class="user-detail-label">Browser / Device</div>
+          <div class="user-detail-value">${user.browser}</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--gray-200); display: flex; gap: 10px; justify-content: flex-end;">
+        <button class="btn ${user.verified ? 'btn-danger' : 'btn-primary'}" onclick="toggleVerified('${user.id}'); closeUserModal();">
+          ${user.verified ? 'Revoke Verified Badge' : 'Grant Verified Badge'}
+        </button>
+      </div>
+    `;
+
+    document.getElementById('userModal').classList.add('show');
+  }
+
+  function closeUserModal() {
+    document.getElementById('userModal').classList.remove('show');
+  }
+
+  function toggleVerified(userId) {
+    const user = state.users.find(u => u.id === userId);
+    if (!user) return;
+
+    user.verified = !user.verified;
+    const action = user.verified ? 'granted to' : 'revoked from';
+    addActivity('badge_changed', `Verified badge ${action} ${user.name}`);
+    saveState();
+    renderAll();
+    showToast('Badge Updated', `Verified badge ${action} ${user.name}`, true);
+  }
+
+  // ============================
+  // BALANCE CONTROL
+  // ============================
+  function renderBalanceUsers() {
+    const select = document.getElementById('balanceUser');
+    select.innerHTML = state.users.map(u =>
+      `<option value="${u.id}">${u.name} (${u.id}) · ${formatNum(u.balance)} USDT</option>`
+    ).join('');
+  }
+
+  function adjustBalance() {
+    const userId = document.getElementById('balanceUser').value;
+    const op = document.getElementById('balanceOperation').value;
+    const amount = parseFloat(document.getElementById('balanceAmount').value);
+    const reason = document.getElementById('balanceReason').value.trim();
+    const notes = document.getElementById('balanceNotes').value.trim();
+
+    if (!userId) {
+      showToast('No User', 'Please select a user', false);
+      return;
+    }
+    if (isNaN(amount) || amount < 0) {
+      showToast('Invalid Amount', 'Please enter a valid amount', false);
+      return;
+    }
+    if (!reason) {
+      showToast('Reason Required', 'Please provide a reason for the adjustment', false);
+      return;
+    }
+
+    const user = state.users.find(u => u.id === userId);
+    if (!user) return;
+
+    let newBalance = user.balance;
+    if (op === 'credit') newBalance += amount;
+    else if (op === 'debit') newBalance -= amount;
+    else if (op === 'set') newBalance = amount;
+
+    if (newBalance < 0) {
+      showToast('Insufficient Balance', 'Cannot debit more than current balance', false);
+      return;
+    }
+
+    const oldBalance = user.balance;
+    user.balance = newBalance;
+
+    state.balanceHistory.unshift({
+      id: 'BH' + Date.now(),
+      timestamp: new Date().toISOString(),
+      userId: user.id,
+      userName: user.name,
+      operation: op,
+      amount,
+      oldBalance,
+      newBalance,
+      reason,
+      notes,
+      admin: adminUser ? adminUser.name : 'System'
+    });
+
+    addActivity('balance_adjusted', `${op === 'credit' ? 'Credited' : op === 'debit' ? 'Debited' : 'Set'} ${formatNum(amount)} USDT for ${user.name} (${reason})`);
+    saveState();
+    renderAll();
+
+    // Reset form
+    document.getElementById('balanceAmount').value = '';
+    document.getElementById('balanceReason').value = '';
+    document.getElementById('balanceNotes').value = '';
+
+    showToast('Balance Adjusted', `${user.name}'s balance updated to ${formatNum(newBalance)} USDT`, true);
+  }
+
+  function renderBalanceHistory() {
+    const body = document.getElementById('balanceHistoryBody');
+    const empty = document.getElementById('balanceHistoryEmpty');
+
+    if (state.balanceHistory.length === 0) {
+      body.innerHTML = '';
+      empty.style.display = 'flex';
+      return;
+    }
+
+    empty.style.display = 'none';
+
+    body.innerHTML = state.balanceHistory.map(h => {
+      const time = new Date(h.timestamp).toLocaleString('en-US', {
+        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
+      });
+      const opLabel = h.operation === 'credit' ? '+ Credit' : h.operation === 'debit' ? '− Debit' : '= Set';
+      return `
+        <tr>
+          <td><div class="cell-sub">${time}</div></td>
+          <td><div class="cell-main">${h.userName}</div><div class="cell-sub">${h.userId}</div></td>
+          <td><span class="status-pill approved">${opLabel}</span></td>
+          <td><div class="cell-main">${formatNum(h.amount)} USDT</div><div class="cell-sub">${formatNum(h.oldBalance)} → ${formatNum(h.newBalance)}</div></td>
+          <td><div class="cell-main">${h.reason}</div>${h.notes ? `<div class="cell-sub">${h.notes}</div>` : ''}</td>
+          <td><div class="cell-sub">${h.admin}</div></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ============================
+  // BADGES
+  // ============================
+  function updateBadges() {
+    document.getElementById('assetsBadge').textContent = state.assets.length;
+    document.getElementById('depositsBadge').textContent = state.deposits.filter(d => d.status === 'pending').length;
+    document.getElementById('withdrawalsBadge').textContent = state.withdrawals.filter(w => w.status === 'pending').length;
+  }
+
+  // ============================
+  // UTILITIES
+  // ============================
+  function formatNum(n, decimals = 2) {
+    return Number(n).toLocaleString('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+  }
+
+  function refreshData() {
+    renderAll();
+    showToast('Refreshed', 'Data updated', true);
+  }
+
+  let toastTimer;
+  function showToast(title, sub, success) {
+    const toast = document.getElementById('toast');
+    const icon = document.getElementById('toastIcon');
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastSub').textContent = sub;
+
+    icon.innerHTML = success
+      ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+      : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 4000);
+  }
+
+  // Close modal on overlay click
+  document.getElementById('userModal').addEventListener('click', (e) => {
+    if (e.target.id === 'userModal') closeUserModal();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeUserModal();
+  });
+
+  // ============================
+  // INIT
+  // ============================
+  window.addEventListener('load', () => {
+    loadState();
+    initGoogleSignIn();
+    restoreAdminSession();
+  });
+</script>
+
+</body>
+</html>
+
