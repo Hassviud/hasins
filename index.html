@@ -4,13 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="monetag" content="63ebc29150de311cd6fddedc15797b2a">
-    <title>موقعي</title>
+    <title>عالم الذكاء الاصطناعي - مستقبل التقنية</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 30px;
+            border-radius: 12px;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #60a5fa;
+        }
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border-right: 4px solid var(--primary);
+        }
+        .card h2 {
+            margin-bottom: 15px;
+            color: #60a5fa;
+        }
+        .card p {
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            margin-top: 40px;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
-    
+
+    <div class="container">
+        <header>
+            <h1>عالم الذكاء الاصطناعي</h1>
+            <p>بوابة نحو استكشاف أحدث تقنيات الثورة الصناعية الرابعة وتطبيقاتها المستقبلية.</p>
+        </header>
+
+        <section class="card">
+            <h2>ما هو الذكاء الاصطناعي؟</h2>
+            <p>الذكاء الاصطناعي (AI) هو محاكاة للذكاء البشري في الآلات البرمجية المبرمجة لتفكر وتتصرف مثل البشر. يهدف إلى تمكين الحواسيب من أداء مهام تتطلب عادةً ذكاءً بشرياً مثل التعلم، الاستدلال، وحل المشكلات.</p>
+        </section>
+
+        <section class="card">
+            <h2>تطبيقات الذكاء الاصطناعي في حياتنا</h2>
+            <p>يدخل الذكاء الاصطناعي في مجالات عديدة تشمل الرعاية الصحية لتحليل الصور التشخيصية، وأنظمة القيادة الذاتية للسيارات، ومساعدات الصوت الذكية، وتطوير الأدوات والبرمجيات المتقدمة.</p>
+        </section>
+
+        <section class="card">
+            <h2>المستقبل والابتكار</h2>
+            <p>تتطور نماذج التعلم العميق والشبكات العصبية بخطى متسارعة، مما يفتح آفاقاً غير مسبوقة للابتكار وتحسين الإنتاجية في مختلف القطاعات العالمية.</p>
+        </section>
+
+        <footer>
+            <p>&copy; 2026 جميع الحقوق محفوظة - موقع الذكاء الاصطناعي</p>
+        </footer>
+    </div>
+
     <script>
+        // تسجيل Service Worker للموقع
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js');
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('Service Worker Registered'))
+                .catch((err) => console.log('Service Worker Failed', err));
         }
     </script>
 </body>
